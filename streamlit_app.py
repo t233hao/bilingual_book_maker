@@ -4,7 +4,7 @@ from make import BEPUB,GPT3,ChatGPT
 import os
 
 
-st.title("Biingual Book Maker")
+st.title("Bilngual Book Maker")
 st.write("This is a simple app to make bilingual books")
 st.markdown("All glory to [@yihong0618](https://github.com/yihong0618/bilingual_book_maker)")
 book_name=st.file_uploader("Upload your book",type=['epub'])
@@ -24,10 +24,16 @@ if make_button:
     model = MODEL_DICT.get(model_select, "chatgpt")
     bilingual_book_name=book_name.name.split(".")[0]+"_bilingual.epub"
     if os.path.exists(bilingual_book_name) == False:
-        e = BEPUB(book_name.name, model, openai_key)
+        progress_text = "Operation in progress. Please wait."
+        my_bar = st.progress(0, text=progress_text)
+
+        e = BEPUB(book_name.name, model, openai_key,my_bar)
         e.make_bilingual_book()
+
     with open(bilingual_book_name,"rb") as f:
         book=f.read()
+
+
     if book is not None:
         download_button=st.download_button(
             label="Download",
@@ -35,5 +41,7 @@ if make_button:
             file_name=bilingual_book_name,
         )
         # delete the file
-        os.remove(bilingual_book_name)
-        os.remove(book_name.name)
+        if download_button:
+            os.remove(bilingual_book_name)
+            os.remove(book_name.name)
+        
