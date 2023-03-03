@@ -75,7 +75,7 @@ class ChatGPT(Base):
                     {
                         "role": "user",
                         # english prompt here to save tokens
-                        "content": f"Please help me to translate，`{text}` to Chinese, please return only translated content not include the origin text",
+                        "content": f"Please help me to translate, `{text}` to Chinese, please return only translated content not include the origin text",
                     }
                 ],
             )
