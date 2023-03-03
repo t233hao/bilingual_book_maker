@@ -1,10 +1,12 @@
 import streamlit as st
 from io import StringIO
 from make import BEPUB,GPT3,ChatGPT
+import os
 
 
 st.title("Biingual Book Maker")
 st.write("This is a simple app to make bilingual books")
+st.markdown("All glory to [@yihong0618](https://github.com/yihong0618/bilingual_book_maker)")
 book_name=st.file_uploader("Upload your book",type=['epub'])
 if book_name is not None:
     with open(book_name.name,"wb") as f:
@@ -20,13 +22,18 @@ make_button=st.button("Make Bilingual Book")
 if make_button:
     MODEL_DICT = {"GPT3": GPT3, "ChatGPT": ChatGPT}
     model = MODEL_DICT.get(model_select, "chatgpt")
-
-    e = BEPUB(book_name.name, model, openai_key)
-    e.make_bilingual_book()
-    with open(f"{book_name.name}_bilingual.epub","rb") as f:
-        book=StringIO(f.read())
-    download_button=st.download_button(
-        label="Download",
-        data=book,
-        file_name=f"{book_name.name}_bilingual.epub",
-    )
+    bilingual_book_name=book_name.name.split(".")[0]+"_bilingual.epub"
+    if os.path.exists(bilingual_book_name) == False:
+        e = BEPUB(book_name.name, model, openai_key)
+        e.make_bilingual_book()
+    with open(bilingual_book_name,"rb") as f:
+        book=f.read()
+    if book is not None:
+        download_button=st.download_button(
+            label="Download",
+            data=book,
+            file_name=bilingual_book_name,
+        )
+        # delete the file
+        os.remove(bilingual_book_name)
+        os.remove(book_name.name)
