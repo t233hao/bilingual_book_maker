@@ -138,13 +138,13 @@ class BEPUB:
         print("TODO need process bar here: " + str(all_p_length))
         self.message="TODO need process bar here: " + str(all_p_length)
         index = 0
-        max_progress = all_p_length
+        max_progress = 20 if IS_TEST else all_p_length
         progress=0
         for i in self.origin_book.get_items():
             if i.get_type() == 9:
                 soup = bs(i.content, "html.parser")
                 p_list = soup.findAll("p")
-                is_test_done = IS_TEST and index > 20
+                is_test_done = IS_TEST and (index > 20)
                 
                 for p in p_list:
                     if not is_test_done:
@@ -157,6 +157,7 @@ class BEPUB:
                             index += 1
                             progress+=1
                             self.progress_bar.progress(progress/max_progress)
+                            is_test_done = IS_TEST and (index > 20)
                 i.content = soup.prettify().encode()
             new_book.add_item(i)
             

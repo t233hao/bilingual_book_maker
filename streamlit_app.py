@@ -4,13 +4,10 @@ from make import BEPUB,GPT3,ChatGPT
 import os
 
 
-st.title("Bilngual Book Maker")
-st.write("This is a simple app to make bilingual books")
+st.title("Bilingual Book Maker")
+st.write("Make bilingual epub books Using AI translate")
 st.markdown("All glory to [@yihong0618](https://github.com/yihong0618/bilingual_book_maker)")
 book_name=st.file_uploader("Upload your book",type=['epub'])
-if book_name is not None:
-    with open(book_name.name,"wb") as f:
-        f.write(book_name.getbuffer())
 col1,col2=st.columns(2)
 openai_key=col1.text_input("OpenAI API Key",type="password")
 model_select=col2.selectbox("Model",["ChatGPT","GPT3"])
@@ -19,29 +16,45 @@ no_limit=col1.checkbox("No Limit")
 test=col2.checkbox("Test")
 
 make_button=st.button("Make Bilingual Book")
+
+st.session_state["book"]=None
+# 如果tmp文件夹不存在，则创建
+path="tmp"
+if os.path.exists(path) == False:
+    os.mkdir(path)
+if book_name is not None:
+    st.session_state["original_book_name"]=os.path.join(path,book_name.name)
+    with open(st.session_state["original_book_name"],"wb") as f:
+        f.write(book_name.getbuffer())
+
 if make_button:
     MODEL_DICT = {"GPT3": GPT3, "ChatGPT": ChatGPT}
     model = MODEL_DICT.get(model_select, "chatgpt")
-    bilingual_book_name=book_name.name.split(".")[0]+"_bilingual.epub"
-    if os.path.exists(bilingual_book_name) == False:
+    st.session_state["bilingual_book_name"]=st.session_state["original_book_name"].split(".")[0]+"_bilingual.epub"
+    if os.path.exists(st.session_state["bilingual_book_name"]) == False:
         progress_text = "Operation in progress. Please wait."
         my_bar = st.progress(0, text=progress_text)
-
-        e = BEPUB(book_name.name, model, openai_key,my_bar)
+        # message = st.text("")
+        e = BEPUB(st.session_state["original_book_name"], model, openai_key,my_bar)
         e.make_bilingual_book()
+        my_bar.progress(100)
+        st.success("Done")
+    with open(st.session_state["bilingual_book_name"],"rb") as f:
+        st.session_state["book"]=f.read()
+    # delete the file
+    try:
+        os.remove(st.session_state["bilingual_book_name"])
+        os.remove(st.session_state["original_book_name"])
+        # 删除path目录下所有文件
+        for file in os.listdir(path):
+            os.remove(os.path.join(path, file))
+    except:
+        pass 
 
-    with open(bilingual_book_name,"rb") as f:
-        book=f.read()
-
-
-    if book is not None:
-        download_button=st.download_button(
-            label="Download",
-            data=book,
-            file_name=bilingual_book_name,
-        )
-        # delete the file
-        if download_button:
-            os.remove(bilingual_book_name)
-            os.remove(book_name.name)
+if st.session_state["book"] is not None:
+    download_button=st.download_button(
+        label="Download",
+        data=st.session_state["book"],
+        file_name=book_name.name.split(".")[0]+"_bilingual.epub",
+    ) 
         
