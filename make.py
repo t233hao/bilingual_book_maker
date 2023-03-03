@@ -67,7 +67,7 @@ class ChatGPT(Base):
         self.message=""
     def translate(self, text):
         print(text)
-        self.message=text
+        
         openai.api_key = self.key
         try:
             completion = openai.ChatCompletion.create(
@@ -92,7 +92,7 @@ class ChatGPT(Base):
                 time.sleep(3)
         except Exception as e:
             print(str(e), "will sleep 60 seconds")
-            self.message=str(e)+"will sleep 60 seconds"
+            self.message.markdown(str(e)+"will sleep 60 seconds")
             # TIME LIMIT for open api please pay
             time.sleep(60)
             completion = openai.ChatCompletion.create(
@@ -112,18 +112,20 @@ class ChatGPT(Base):
                 .decode()
             )
         print(t_text)
-        self.message=t_text
+        self.message.markdown(text+"\n"+t_text)
+        # self.message.markdown(t_text)
         return t_text
 
 
 class BEPUB:
-    def __init__(self, epub_name, model, key, progress_bar):
+    def __init__(self, epub_name, model, key, progress_bar, message):
         self.epub_name = epub_name
         self.new_epub = epub.EpubBook()
         self.translate_model = model(key)
         self.origin_book = epub.read_epub(self.epub_name)
-        self.message=self.translate_model.message
         self.progress_bar=progress_bar
+        self.message=message
+        self.translate_model.message=message
 
     def make_bilingual_book(self):
         new_book = epub.EpubBook()
@@ -136,7 +138,7 @@ class BEPUB:
             [len(bs(i.content, "html.parser").findAll("p")) for i in all_items]
         )
         print("TODO need process bar here: " + str(all_p_length))
-        self.message="TODO need process bar here: " + str(all_p_length)
+        self.message.markdown("TODO need process bar here: " + str(all_p_length))
         index = 0
         max_progress = 20 if IS_TEST else all_p_length
         progress=0

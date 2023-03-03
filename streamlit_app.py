@@ -20,6 +20,9 @@ make_button=st.button("Make Bilingual Book")
 st.session_state["book"]=None
 # 如果tmp文件夹不存在，则创建
 path="tmp"
+if "Translate Success" not in st.session_state:
+    st.session_state["Translate Success"] = False
+
 if os.path.exists(path) == False:
     os.mkdir(path)
 if book_name is not None:
@@ -34,14 +37,22 @@ if make_button:
     if os.path.exists(st.session_state["bilingual_book_name"]) == False:
         progress_text = "Operation in progress. Please wait."
         my_bar = st.progress(0, text=progress_text)
-        # message = st.text("")
-        e = BEPUB(st.session_state["original_book_name"], model, openai_key,my_bar)
+        translating=st.markdown("Translating...")
+        message = st.markdown(" ")
+
+
+        e = BEPUB(st.session_state["original_book_name"], model, openai_key,my_bar,message)
         e.make_bilingual_book()
         my_bar.progress(100)
-        st.success("Done")
+        translating.markdown("Done")
+        message.markdown(" ")
+        
     with open(st.session_state["bilingual_book_name"],"rb") as f:
         st.session_state["book"]=f.read()
-    # delete the file
+    st.session_state["Translate Success"]=True
+
+# delete the file
+if st.session_state["Translate Success"]==True:
     try:
         os.remove(st.session_state["bilingual_book_name"])
         os.remove(st.session_state["original_book_name"])
@@ -51,7 +62,7 @@ if make_button:
     except:
         pass 
 
-if st.session_state["book"] is not None:
+if st.session_state["Translate Success"]==True and st.session_state["book"] is not None:
     download_button=st.download_button(
         label="Download",
         data=st.session_state["book"],
