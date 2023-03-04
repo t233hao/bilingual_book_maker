@@ -7,7 +7,7 @@ import os
 st.title("Bilingual Book Maker")
 st.write("使用 GPT-3 或 ChatGPT 將原文電子書轉換成原文與繁體中文對照的電子書")
 st.markdown("感謝 [@yihong0618](https://github.com/yihong0618/bilingual_book_maker)")
-st.markdown("關於這個工具: [使用教學與原始碼相關資訊](https://softnshare.com/bilingual_book_maker-streamlit/)")
+st.markdown("關於這個工具: [使用教學與 streamlit 的原始碼相關資訊](https://softnshare.com/bilingual_book_maker-streamlit/)")
 book_name=st.file_uploader("Upload your book",type=['epub'])
 col1,col2=st.columns(2)
 openai_key=col1.text_input("OpenAI API Key",type="password")
