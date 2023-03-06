@@ -13,10 +13,15 @@ from rich import print
 NO_LIMIT = False
 IS_TEST = False
 LANG = "Traditional Chinese"
+PROMPT = f"I want you to act as an {LANG} translator, spelling corrector and improver. I will speak to you in any language and you will detect the language, translate it and answer in the corrected and improved version of my text, in {LANG}. I want you to replace my simplified A0-level words and sentences with more beautiful and elegant, upper level {LANG} words and sentences. Keep the meaning same, but make them more literary. I want you to only reply the correction, the improvements and nothing else, do not write explanations, the text is: "
 
 class Base:
     def __init__(self, key):
         pass
+
+    def createprompt(self, text):
+        target = f"/n/n{text}"
+        return PROMPT + text
 
     @abstractmethod
     def translate(self, text):
@@ -43,7 +48,7 @@ class GPT3(Base):
 
     def translate(self, text):
         print(text)
-        self.data["prompt"] = f"Please help me to translate the following text to {LANG}: \n\n{text}"
+        self.data["prompt"] = self.createprompt(text)
         r = self.session.post(self.api_url, headers=self.headers, json=self.data)
         if not r.ok:
             return text
@@ -67,7 +72,6 @@ class ChatGPT(Base):
         self.message=""
     def translate(self, text):
         print(text)
-        
         openai.api_key = self.key
         try:
             completion = openai.ChatCompletion.create(
@@ -76,7 +80,7 @@ class ChatGPT(Base):
                     {
                         "role": "user",
                         # english prompt here to save tokens
-                        "content":f"Please help me to translate the following text to {LANG}. Please return only translated content not include the origin text. Here is the text: \n\n{text}",
+                        "content":self.createprompt(text),
                     }
                 ],
             )
@@ -100,7 +104,7 @@ class ChatGPT(Base):
                 messages=[
                     {
                         "role": "user",
-                        "content": f"Please help me to translate，`{text}` to Simplified Chinese, please return only translated content not include the origin text",
+                        "content": self.createprompt(text),
                     }
                 ],
             )
